@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1, minimum-scale=1, width=device-width">
+		<title>Calculator</title>
+		<!-- <link rel="stylesheet" type="text/css" href="res/single.css" /> -->
+		<style>
+			body {
+				background: #f6fafb;
+			}
+
+			.gradient-button {
+				text-decoration: none;
+				outline: none;
+				display: inline-block;
+				color: white;
+				padding: 20px 30px;
+				margin: 10px 20px;
+				border-radius: 10px;
+				font-family: 'Montserrat', sans-serif;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				background-image: linear-gradient(to right, #9EEFE1 0%, #4830F0 51%, #9EEFE1 100%);
+				background-size: 200% auto;
+				box-shadow: 0 0 20px rgba(0, 0, 0, .1);
+				transition: .5s;
+				width: 400px;
+				/* height: 400px; */
+			}
+
+			.gradient-button:hover {
+				background-position: right center;
+			}
+			.gradient-button-passed {
+				text-decoration: none;
+				outline: none;
+				display: inline-block;
+				color: rgb(0, 0, 255);
+				padding: 20px 30px;
+				margin: 10px 20px;
+				border-radius: 10px;
+				font-family: 'Montserrat', sans-serif;
+				text-transform: uppercase;
+				letter-spacing: 2px;
+				background-image: linear-gradient(to right, #9EEFE1 0%, #4830F0 51%, #9EEFE1 100%);
+				background-size: 200% auto;
+				box-shadow: 0 0 20px rgba(0, 0, 0, .1);
+				transition: .5s;
+				width: 400px;
+				/* height: 400px; */
+			}
+			.styled {
+				border: 0;
+				line-height: 2.5;
+				padding: 0 20px;
+				font-size: 1rem;
+				text-align: center;
+				color: #fff;
+				text-shadow: 1px 1px 1px #000;
+				border-radius: 10px;
+				background-color: rgb(220 0 0 / 100%);
+				background-image: linear-gradient(
+					to top left,
+					rgb(0 0 0 / 20%),
+					rgb(0 0 0 / 20%) 30%,
+					rgb(0 0 0 / 0%)
+				);
+				box-shadow:
+					inset 2px 2px 3px rgb(255 255 255 / 60%),
+					inset -2px -2px 3px rgb(0 0 0 / 60%);
+				}
+
+			.styled:hover {
+				background-color: rgb(255 0 0 / 100%);
+				}
+
+			.styled:active {
+				box-shadow:
+					inset -2px -2px 3px rgb(255 255 255 / 60%),
+					inset 2px 2px 3px rgb(0 0 0 / 60%);
+				}
+
+		</style>
+
+		  <!-- <script>
+			function isOk() {
+			 var str = document.getElementById("ddata").value;
+			 var status = document.getElementById("status");
+			 if (str == "yes" ) status.innerHTML = "<БД очищена>";
+			   else status.innerHTML = "Очистка БД не подтверждена";
+			 if(isEmpty(str)) status.innerHTML = "Поле пустое";
+			}
+			function isEmpty(str){
+			 return (str == null) || (str.length == 0);
+			}
+		   </script> -->
+
+	</head>
+	<body>
+                <p style="font-size: 2em;">&nbsp;&nbsp;&nbsp;distributed calculator </p>
+		<table>
+			<td width="50%">
+				<div class="button-container">
