@@ -207,7 +207,7 @@ func addNewData(data, dijkstra string) error {
 		return err
 	}
 	muConfigs.Lock()
-	newData := strconv.Itoa(config_main.nextNumber) + ":" + data + ":" + dijkstra + ":0\n"
+	newData := strconv.Itoa(config_main.nextNumber) + ":" + data + ":" + dijkstra + ":0:0\n"
 	config_main.nextNumber++
 	muConfigs.Unlock()
 	if _, err = file.WriteString(newData); err != nil {

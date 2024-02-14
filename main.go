@@ -50,11 +50,11 @@ func initConfig() {
 	config_main.fileExpressions = "./db/expressions.db"
 	config_main.fileDijkstra = "./db/dijkstra.db"
 	config_main.lastExpression = ""
-	config_main.oetDivide = 60
-	config_main.oetMinus = 60
-	config_main.oetMultiply = 60
-	config_main.oetPlus = 60
-	config_main.oetPower = 60
+	config_main.oetDivide = 6
+	config_main.oetMinus = 6
+	config_main.oetMultiply = 6
+	config_main.oetPlus = 6
+	config_main.oetPower = 6
 	config_main.nextNumber = 1
 	config_main.qtyServers = 5
 	config_main.qtyBusyServers = 0

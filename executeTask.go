@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"math"
 	"os"
@@ -55,17 +56,12 @@ func upperStatusTaskToFile(taskNbr string) {
 	}
 }
 
-func isNumber(str string) (int, bool) {
-	_, err := strconv.Atoi
-	return
-}
-
 func calcPower(v1, v2 int) int {
 	log.Printf("вычисляется возведение в степень %d ^ %d\n", v1, v2)
 	muConfigs.Lock()
 	ttime := config_main.oetPower
 	muConfigs.Unlock()
-	time.Sleep(ttime * time.Second)
+	time.Sleep(time.Duration(ttime) * time.Second)
 	res := int(math.Pow(float64(v1), float64(v2)))
 	log.Printf("получен результат возведения в степень %d ^ %d = %d\n", v1, v2, res)
 	return res
@@ -76,7 +72,7 @@ func calcMinus(v1, v2 int) int {
 	muConfigs.Lock()
 	ttime := config_main.oetMinus
 	muConfigs.Unlock()
-	time.Sleep(ttime * time.Second)
+	time.Sleep(time.Duration(ttime) * time.Second)
 	res := v1 - v2
 	log.Printf("получен результат разности %d - %d = %d\n", v1, v2, res)
 	return res
@@ -87,7 +83,7 @@ func calcPlus(v1, v2 int) int {
 	muConfigs.Lock()
 	ttime := config_main.oetPlus
 	muConfigs.Unlock()
-	time.Sleep(ttime * time.Second)
+	time.Sleep(time.Duration(ttime) * time.Second)
 	res := v1 + v2
 	log.Printf("получен результат сложения %d + %d = %d\n", v1, v2, res)
 	return res
@@ -98,7 +94,7 @@ func calcMultiply(v1, v2 int) int {
 	muConfigs.Lock()
 	ttime := config_main.oetMultiply
 	muConfigs.Unlock()
-	time.Sleep(ttime * time.Second)
+	time.Sleep(time.Duration(ttime) * time.Second)
 	res := v1 * v2
 	log.Printf("получен результат произведения %d * %d = %d\n", v1, v2, res)
 	return res
@@ -109,7 +105,7 @@ func calcDivide(v1, v2 int) int {
 	muConfigs.Lock()
 	ttime := config_main.oetDivide
 	muConfigs.Unlock()
-	time.Sleep(ttime * time.Second)
+	time.Sleep(time.Duration(ttime) * time.Second)
 	res := v1 / v2
 	log.Printf("получен результат деления %d / %d = %d\n", v1, v2, res)
 	return res
@@ -122,29 +118,31 @@ func executeTask(task []string) {
 	tmpArr := make([]int, 0)
 	findErr := false
 	var result int
-	for i := 0; i < len(task); i++ {
-		nbr, err := strconv.Atoi(task[i])
+	taskSplit := strings.Split(task[2], " ")
+	for i := 0; i < len(taskSplit); i++ {
+		nbr, err := strconv.Atoi(taskSplit[i])
 		if err != nil && len(tmpArr) > 1 {
 			v2 := tmpArr[len(tmpArr)-1]
 			v1 := tmpArr[len(tmpArr)-2]
+			// fmt.Println("v1,v2  ", v1, v2, "task[i] ", taskSplit[i])
 			tmpArr = tmpArr[:len(tmpArr)-2]
-			if task[i] == "/" {
+			if taskSplit[i] == "/" {
 				if v2 == 0 {
 					findErr = true
 					break
 				}
 				result = calcDivide(v1, v2)
 			}
-			if task[i] == "*" {
+			if taskSplit[i] == "*" {
 				result = calcMultiply(v1, v2)
 			}
-			if task[i] == "-" {
+			if taskSplit[i] == "-" {
 				result = calcMinus(v1, v2)
 			}
-			if task[i] == "+" {
+			if taskSplit[i] == "+" {
 				result = calcPlus(v1, v2)
 			}
-			if task[i] == "^" {
+			if taskSplit[i] == "^" {
 				result = calcPower(v1, v2)
 			}
 		} else {
@@ -154,6 +152,8 @@ func executeTask(task []string) {
 			break
 		}
 	}
+
+	fmt.Println("result: ", result)
 
 	upperStatusTaskToFile(task[0]) // переводим задачу в статус "выполнено"
 	muConfigs.Lock()
