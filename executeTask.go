@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// изменение статуса взятой в работу задачи (на "в работе" или "завершена")
+// изменение статуса взятой в работу задачи (на "в работе")
 func upperStatusTaskToFile(taskNbr string) {
 	muExpressions.Lock()
 	defer muExpressions.Unlock()
@@ -27,11 +27,7 @@ func upperStatusTaskToFile(taskNbr string) {
 		exp := strings.Split(v, ":")
 		if len(exp) > 4 {
 			if exp[0] == taskNbr {
-				// if exp[3] == "0" {
 				exp[3] = "1" // меняем статус на "в работе"
-				// } else if exp[3] == "1" {
-				// 	exp[3] = "2" // меняем статус на "выполнено"
-				// }
 			}
 			dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3]+":"+exp[4])
 		}
@@ -157,16 +153,15 @@ func executeTask(task []string) {
 	log.Println("отправлена на выполнение новая задача: ", task[2])
 	upperStatusTaskToFile(task[0]) // переводим задачу в статус "в работе"
 
-	tmpArr := make([]int, 0)
+	tmpArr := make([]int, 0) // вспомогательный срез для хранения чисел
 	findErr := false
 	var result int
 	taskSplit := strings.Split(task[2], " ")
 	for i := 0; i < len(taskSplit); i++ {
 		nbr, err := strconv.Atoi(taskSplit[i])
-		if err != nil && len(tmpArr) > 1 {
+		if err != nil && len(tmpArr) > 1 { // попался арифметический знак
 			v2 := tmpArr[len(tmpArr)-1]
 			v1 := tmpArr[len(tmpArr)-2]
-			// fmt.Println("v1,v2  ", v1, v2, "task[i] ", taskSplit[i])
 			tmpArr = tmpArr[:len(tmpArr)-2]
 			if taskSplit[i] == "/" {
 				if v2 == 0 {
@@ -183,16 +178,14 @@ func executeTask(task []string) {
 			} else if taskSplit[i] == "^" {
 				result = calcPower(v1, v2)
 			}
-			tmpArr = append(tmpArr, result)
-		} else {
+			tmpArr = append(tmpArr, result) // запишем результат вычислений во вспомогательный срез
+		} else { // перекладываем число во вспомогательный срез
 			tmpArr = append(tmpArr, nbr)
 		}
 		if findErr {
 			break
 		}
 	}
-
-	// fmt.Println("result: ", result)
 
 	saveResultToFile(task[0], strconv.Itoa(result)) // переводим задачу в статус "выполнено" и сохраняем результат
 	muConfigs.Lock()
@@ -253,10 +246,6 @@ func checkUndoneJobs() {
 					f.Close()
 					// запишем задачу в очередь
 					addNewUnDoneTask(exp)
-					// muUnDone.Lock()
-					// unDone = append(unDone, exp)
-					// // fmt.Println(unDone)
-					// muUnDone.Unlock()
 				}
 				dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3]+":"+exp[4])
 			}
@@ -282,42 +271,3 @@ func checkUndoneJobs() {
 		}
 	}
 }
-
-func readDijkstra() error {
-	dijkstraSlice := make([]string, 0)
-	muDijkstra.Lock()
-	defer muDijkstra.Unlock()
-
-	f, err := os.Open(config_main.fileDijkstra)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	fileScanner := bufio.NewScanner(f)
-	for fileScanner.Scan() {
-		dataSlice := strings.Split(fileScanner.Text(), ":")
-		if len(dataSlice) > 0 {
-			dijkstraSlice = append(dijkstraSlice, dataSlice[0])
-		}
-	}
-
-	log.Println("Прочитано из файла dijkstra:", dijkstraSlice)
-	return nil
-}
-
-// func savePreparedData(dijkstraSlice []dijkstraData) {
-// 	muDijkstra.Lock()
-// 	defer muDijkstra.Unlock()
-// 	file, err := os.OpenFile("./db/dijkstra.db", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer file.Close()
-// 	if _, err = file.WriteString(dijkstraSlice + "\n"); err != nil {
-// 		panic(err)
-// 	}
-// 	log.Println("В бд добавлена новая строка:", dijkstraSlice)
-// 	savePreparedData(dijkstraSlice)
-
-// 	return nil
-// }

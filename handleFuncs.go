@@ -24,23 +24,6 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("поступило обращение к главной странице")
 
-	// fmt.Fprint(w, "Для использования калькулятора отправьте на сервер запрос типа:\n\tcurl http://localhost:8001/data/?data='2+6*7'")
-
-	// path := filepath.Join("front", "index.html")
-	// //создаем html-шаблон
-	// tmpl, err := template.ParseFiles(path)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), 400)
-	// 	return
-	// }
-	// //выводим шаблон клиенту в браузер
-	// err = tmpl.Execute(w, nil)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), 400)
-	// 	return
-	// }
-	//верстаем контент страницы в виде обычной строки
-
 	content := ""
 	f, err := os.Open("./front/up.html")
 	fileScanner := bufio.NewScanner(f)
@@ -78,10 +61,8 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 
 // Обработка обращения на страницу ввода данных
 func getData(w http.ResponseWriter, r *http.Request) {
-	// name := r.URL.Query().Get("data")
 	name, err := url.PathUnescape(url.QueryEscape(r.URL.Query().Get("data")))
 	if err != nil {
-		// fmt.Errorf(err.Error())
 		log.Println(err.Error())
 	}
 	if name != "" {
@@ -139,7 +120,6 @@ func getData(w http.ResponseWriter, r *http.Request) {
 // Обработка обращения на страницу получения информации о ранее отправлеенных задачах и статусе их решения
 func getList(w http.ResponseWriter, r *http.Request) {
 	log.Println("поступило обращение к странице со списком выражений")
-	// fmt.Fprint(w, "Привет")
 
 	content := ""
 	f, err := os.Open("./front/up.html")
@@ -183,22 +163,6 @@ func getList(w http.ResponseWriter, r *http.Request) {
 	f.Close()
 	muExpressions.Unlock()
 
-	// content += "-----------------<br>Выражения в виде, подготовленном для вычислений:<br>"
-
-	// muDijkstra.Lock()
-
-	// f, err = os.Open(config_main.fileDijkstra)
-
-	// fileScanner = bufio.NewScanner(f)
-	// for fileScanner.Scan() {
-	// 	dataSlice := strings.Split(fileScanner.Text(), ":")
-	// 	if len(dataSlice) > 0 {
-	// 		content += dataSlice[0] + "<br>"
-	// 	}
-	// }
-	// f.Close()
-	// muDijkstra.Unlock()
-
 	f, err = os.Open("./front/down.html")
 	fileScanner = bufio.NewScanner(f)
 	for fileScanner.Scan() {
@@ -216,7 +180,6 @@ func getList(w http.ResponseWriter, r *http.Request) {
 
 // Обработка обращения на страницу получения информации о настройках системы
 func getSettings(w http.ResponseWriter, r *http.Request) {
-	// log.Println("поступило обращение к странице со списком настроек системы")
 
 	name, err := url.PathUnescape(url.QueryEscape(r.URL.Query().Get("settings")))
 	if err != nil {
@@ -231,7 +194,6 @@ func getSettings(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Println("поступило обращение к странице со списком настроек системы")
 	}
-	// fmt.Fprint(w, name)
 
 	content := ""
 	f, err := os.Open("./front/up.html")
@@ -275,7 +237,6 @@ func getSettings(w http.ResponseWriter, r *http.Request) {
 
 // Обработка обращения на страницу получения информации о занятых ресурсах ситстемы
 func getResources(w http.ResponseWriter, r *http.Request) {
-	// log.Println("поступило обращение к странице со списком вычислительных мощностей")
 
 	name, err := url.PathUnescape(url.QueryEscape(r.URL.Query().Get("resources")))
 	if err != nil {
@@ -356,13 +317,6 @@ func clearDbAttention(w http.ResponseWriter, r *http.Request) {
 	f.Close()
 
 	content += `<p style="font-size: 1.4em;">Для очистки БД отправьте на сервер запрос:<br><br>curl http://localhost:` + config_main.port + `/clearDb</p>`
-	// content += `<form><input class="styled" type="button" value="Очистить БД" /></form>`
-
-	// 	content += `  <form action="">
-	// <p>Для очистки БД введите yes и нажмите кнобку &laquo;Очистить БД&raquo;</p>
-	// <p><input type="text" id="ddata"> <span id="status"></span></p>
-	// <p><input type="button" value="Очистить БД" onclick="isOk()"></p>
-	// </form>`
 
 	f, err = os.Open("./front/down.html")
 	fileScanner = bufio.NewScanner(f)
@@ -384,14 +338,6 @@ func clearDbFunc() {
 	muExpressions.Lock()
 	defer muExpressions.Unlock()
 	file, err := os.OpenFile(config_main.fileExpressions, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-	if err != nil {
-		panic(err)
-	}
-	file.Close()
-
-	muDijkstra.Lock()
-	defer muDijkstra.Unlock()
-	file, err = os.OpenFile(config_main.fileDijkstra, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
 	}
