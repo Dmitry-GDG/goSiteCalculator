@@ -53,6 +53,7 @@ func tokenize(data string) ([]string, error) {
 			return []string{}, errors.New("error: expression is not valid")
 		}
 	}
+	// fmt.Println(outp)
 	return outp, nil
 }
 
@@ -137,8 +138,34 @@ func dijkstra(tokens []string) ([]dijkstraData, error) {
 		}
 		dijkstraSlice = append(dijkstraSlice, newMember)
 	}
+	// fmt.Print("Результат Дейкстры: ")
+	// for i := 0; i < len(dijkstraSlice); i++ {
+	// 	if !dijkstraSlice[i].isSign {
+	// 		fmt.Print(dijkstraSlice[i].val, " ")
+	// 	} else {
+	// 		fmt.Print(string(dijkstraSlice[i].valSign), " ")
+	// 	}
+	// }
+	// fmt.Println()
 	return dijkstraSlice, nil
 }
+
+// func savePreparedData(dijkstraSlice []dijkstraData) {
+// 	muDijkstra.Lock()
+// 	defer muDijkstra.Unlock()
+// 	file, err := os.OpenFile("./db/dijkstra.db", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer file.Close()
+// 	if _, err = file.WriteString(dijkstraSlice + "\n"); err != nil {
+// 		panic(err)
+// 	}
+// 	log.Println("В бд добавлена новая строка:", dijkstraSlice)
+// 	savePreparedData(dijkstraSlice)
+
+// 	return nil
+// }
 
 // проверка задачи на уникальность (если задано такое условие)
 func checkUnicTask(data string) (bool, error) {
@@ -203,6 +230,21 @@ func addNewData(data, dijkstra string) error {
 	return nil
 }
 
+// добавление нового выражения в Польской нотации в свою базу, под вопросом
+func addNewDijkstra(dijkstra string) error {
+	muDijkstra.Lock()
+	defer muDijkstra.Unlock()
+	file, err := os.OpenFile(config_main.fileDijkstra, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	if _, err = file.WriteString(dijkstra + ":wait\n"); err != nil {
+		return err
+	}
+	return nil
+}
+
 // основная функция парсинга и сохранения нового выражения
 func parseAndSaveTask(data string) error {
 	data = strings.Replace(data, "**", "^", -1)
@@ -258,6 +300,40 @@ func parseAndSaveTask(data string) error {
 
 	// обновляем данные о последнем выражении в файле последнего конфига
 	savePresentConfigToFile()
+
+	// prevConf, err := os.ReadFile(config_main.conf)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// prevConfMass := strings.Split(string(prevConf), "\n")
+	// tmpStr := ""
+	// for i := 0; i < len(prevConfMass); i++ {
+	// 	if len(prevConfMass[i]) > 1 {
+	// 		prevConfMass[i] = trimSpacesAndTabs(prevConfMass[i])
+	// 		prevConfMass[i] = removeR(prevConfMass[i])
+	// 		tmpStrI := strings.Split(prevConfMass[i], " ")
+	// 		if len(tmpStrI) > 1 {
+	// 			if tmpStrI[0] != "lastExpression" {
+	// 				tmpStr += prevConfMass[i] + "\n"
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// tmpStr += "lastExpression " + data + "\n"
+	// f, err := os.Create(config_main.conf)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer f.Close()
+	// _, err = f.WriteString(tmpStr)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// добавим также эту строку в отдельный файл, который впоследствии будет участвовать в расчетах
+	if err := addNewDijkstra(dijkstra); err != nil {
+		panic(err)
+	}
 
 	return nil
 }

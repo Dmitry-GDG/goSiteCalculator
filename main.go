@@ -12,6 +12,7 @@ type Config_main struct {
 	checkUnicTask   int    // проверка введённого выражения на уникальность (0 не проверять, 1 проверять)
 	conf            string // файл для сохранения последнего конфига
 	fileExpressions string // файл бд, в который будут записываться выражения
+	fileDijkstra    string // файл для записи подготовленных выражений
 	lastExpression  string // Последнее введённое выражение
 	oetPlus         int    // operation execution time: + , seconds
 	oetMinus        int    // operation execution time: - , seconds
@@ -23,17 +24,31 @@ type Config_main struct {
 	qtyBusyServers  int    // количество занятых серверов вычислений
 }
 
+// type Task struct {
+// 	v1, v2 int
+// 	sign   string
+// }
+
+// type Expression struct {
+// 	expression string
+// 	isDone     bool
+// }
+
 var config_main Config_main
 var muConfigs sync.Mutex
 var muExpressions sync.Mutex
+var muDijkstra sync.Mutex
 var unDone [][]string // слайс для хранения невыполненных задач
 var muUnDone sync.Mutex
+
+// var muLastExpression sync.Mutex
 
 func initConfig() {
 	config_main.port = "8000"
 	config_main.checkUnicTask = 0
 	config_main.conf = "./configs/config_prev.conf"
 	config_main.fileExpressions = "./db/expressions.db"
+	config_main.fileDijkstra = "./db/dijkstra.db"
 	config_main.lastExpression = ""
 	config_main.oetDivide = 6
 	config_main.oetMinus = 6
@@ -81,5 +96,5 @@ func main() {
 }
 
 // go run $(ls *.go)
-// curl http://localhost:8000/data/?data="3+4*2/(1-5)^2^3"
+// curl http://localhost:8080/metrics
 // Ctrl + c

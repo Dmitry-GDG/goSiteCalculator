@@ -29,6 +29,8 @@ func fillConfig(str string) {
 		config_main.conf = val[1]
 	} else if val[0] == "fileExpressions" {
 		config_main.fileExpressions = val[1]
+	} else if val[0] == "fileDijkstra" {
+		config_main.fileDijkstra = val[1]
 	} else if val[0] == "lastExpression" {
 		config_main.lastExpression = val[1]
 	} else if val[0] == "oetDivide" {
@@ -102,6 +104,7 @@ func savePresentConfigToFile() {
 	configStr += "checkUnicTask " + strconv.Itoa(config_main.checkUnicTask) + "\n"
 	configStr += "conf " + config_main.conf + "\n"
 	configStr += "fileExpressions " + config_main.fileExpressions + "\n"
+	configStr += "fileDijkstra " + config_main.fileDijkstra + "\n"
 	configStr += "lastExpression " + config_main.lastExpression + "\n"
 	configStr += "oetDivide " + strconv.Itoa(config_main.oetDivide) + "\n"
 	configStr += "oetMinus " + strconv.Itoa(config_main.oetMinus) + "\n"
@@ -110,6 +113,8 @@ func savePresentConfigToFile() {
 	configStr += "oetPower " + strconv.Itoa(config_main.oetPower) + "\n"
 	configStr += "qtyServers " + strconv.Itoa(config_main.qtyServers) + "\n"
 	configStr += "nextNumber " + strconv.Itoa(config_main.nextNumber)
+
+	// fmt.Println("configStr: \n", configStr)
 
 	destFile, err := os.Create(config_main.conf)
 	if err != nil {
@@ -129,6 +134,19 @@ func cleanPrevData() {
 	muExpressions.Lock()
 	defer muExpressions.Unlock()
 	destFile, err := os.Create(config_main.fileExpressions)
+	if err != nil {
+		panic(err)
+	}
+	defer destFile.Close()
+
+	_, err = io.WriteString(destFile, "")
+	if err != nil {
+		panic(err)
+	}
+
+	muDijkstra.Lock()
+	defer muDijkstra.Unlock()
+	destFile, err = os.Create(config_main.fileDijkstra)
 	if err != nil {
 		panic(err)
 	}
