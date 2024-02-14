@@ -173,7 +173,11 @@ func getList(w http.ResponseWriter, r *http.Request) {
 			} else if exp[3] == "2" {
 				exp[3] = "status: done"
 			}
-			content += "Номер задачи: " + exp[0] + "<br>&nbsp;" + exp[1] + "&nbsp;" + exp[3] + "<br>Выражение в виде, подготовленном для вычислений: " + exp[2] + "<br>-----------------<br>"
+			content += "Номер задачи: " + exp[0] + "<br>&nbsp;" + exp[1] + "&nbsp;" + exp[3] + "<br>Выражение в виде, подготовленном для вычислений: " + exp[2]
+			if exp[3] == "status: done" {
+				content += "<br>&nbsp;Итог: " + exp[4]
+			}
+			content += "<br>-----------------<br>"
 		}
 	}
 	f.Close()

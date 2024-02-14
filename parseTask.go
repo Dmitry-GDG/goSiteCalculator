@@ -219,9 +219,10 @@ func addNewData(data, dijkstra string) error {
 	}
 	file.Close()
 	var newDataArr []string
-	newDataArr = append(newDataArr, strconv.Itoa(config_main.nextNumber))
+	newDataArr = append(newDataArr, strconv.Itoa(config_main.nextNumber-1))
 	newDataArr = append(newDataArr, data)
 	newDataArr = append(newDataArr, dijkstra)
+	newDataArr = append(newDataArr, "0")
 	newDataArr = append(newDataArr, "0")
 	addNewUnDoneTask(newDataArr)
 	savePresentConfigToFile()

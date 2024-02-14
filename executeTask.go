@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"math"
 	"os"
@@ -26,16 +25,16 @@ func upperStatusTaskToFile(taskNbr string) {
 	dataArrNew := make([]string, 0)
 	for _, v := range dataArr {
 		exp := strings.Split(v, ":")
-		if len(exp) > 3 {
+		if len(exp) > 4 {
 			if exp[0] == taskNbr {
-				if exp[3] == "0" {
-					exp[3] = "1" // меняем статус на "в работе"
-				} else if exp[3] == "1" {
-					exp[3] = "2" // меняем статус на "выполнено"
-				}
+				// if exp[3] == "0" {
+				exp[3] = "1" // меняем статус на "в работе"
+				// } else if exp[3] == "1" {
+				// 	exp[3] = "2" // меняем статус на "выполнено"
+				// }
 			}
+			dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3]+":"+exp[4])
 		}
-		dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3])
 	}
 	f.Close()
 	// запишем изменения в файл
@@ -111,6 +110,49 @@ func calcDivide(v1, v2 int) int {
 	return res
 }
 
+func saveResultToFile(taskNbr, result string) {
+	muExpressions.Lock()
+	defer muExpressions.Unlock()
+	f, _ := os.Open(config_main.fileExpressions)
+	fileScanner := bufio.NewScanner(f)
+	dataArr := make([]string, 0)
+	for fileScanner.Scan() {
+		data := fileScanner.Text()
+		data = removeR(data)
+		dataArr = append(dataArr, data)
+	}
+	dataArrNew := make([]string, 0)
+	for _, v := range dataArr {
+		exp := strings.Split(v, ":")
+		if len(exp) > 4 {
+			if exp[0] == taskNbr {
+				if exp[3] == "1" {
+					exp[3] = "2" // меняем статус на "выполнено"
+				}
+				exp[4] = result
+			}
+			dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3]+":"+exp[4])
+		}
+	}
+	f.Close()
+	// запишем изменения в файл
+	dataStr := ""
+	for _, v := range dataArrNew {
+		if v != "" {
+			dataStr += v + "\n"
+		}
+	}
+	f1, err := os.Create(config_main.fileExpressions)
+	if err != nil {
+		panic(err)
+	}
+	defer f1.Close()
+	_, err = f1.WriteString(dataStr)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func executeTask(task []string) {
 	log.Println("отправлена на выполнение новая задача: ", task[2])
 	upperStatusTaskToFile(task[0]) // переводим задачу в статус "в работе"
@@ -132,19 +174,16 @@ func executeTask(task []string) {
 					break
 				}
 				result = calcDivide(v1, v2)
-			}
-			if taskSplit[i] == "*" {
+			} else if taskSplit[i] == "*" {
 				result = calcMultiply(v1, v2)
-			}
-			if taskSplit[i] == "-" {
+			} else if taskSplit[i] == "-" {
 				result = calcMinus(v1, v2)
-			}
-			if taskSplit[i] == "+" {
+			} else if taskSplit[i] == "+" {
 				result = calcPlus(v1, v2)
-			}
-			if taskSplit[i] == "^" {
+			} else if taskSplit[i] == "^" {
 				result = calcPower(v1, v2)
 			}
+			tmpArr = append(tmpArr, result)
 		} else {
 			tmpArr = append(tmpArr, nbr)
 		}
@@ -153,9 +192,9 @@ func executeTask(task []string) {
 		}
 	}
 
-	fmt.Println("result: ", result)
+	// fmt.Println("result: ", result)
 
-	upperStatusTaskToFile(task[0]) // переводим задачу в статус "выполнено"
+	saveResultToFile(task[0], strconv.Itoa(result)) // переводим задачу в статус "выполнено" и сохраняем результат
 	muConfigs.Lock()
 	config_main.qtyBusyServers-- // освобождаем один сервер
 	muConfigs.Unlock()
@@ -166,22 +205,21 @@ func launchTasks() {
 	// бесконечный цикл с паузой 1 сек
 	for {
 		muConfigs.Lock()
-		qtyServers := config_main.qtyServers
-		qtyBusy := config_main.qtyBusyServers
-		if qtyServers > qtyBusy {
+
+		if config_main.qtyServers > config_main.qtyBusyServers {
 			muUnDone.Lock()
 			if len(unDone) > 0 {
-				for len(unDone) > 0 && qtyServers > qtyBusy { // пока есть задачи и свободные серверы
+				for len(unDone) > 0 && config_main.qtyServers > config_main.qtyBusyServers { // пока есть задачи и свободные серверы
 					// popFront
 					newTask := unDone[0]
 					unDone = unDone[1:]          // удаляем задачу из очереди
 					go executeTask(newTask)      // запускаем задачу в отдельной горутине
 					config_main.qtyBusyServers++ // занятых серверов стало больше
-					qtyBusy = config_main.qtyBusyServers
 				}
 			}
 			muUnDone.Unlock()
 		}
+
 		muConfigs.Unlock()
 		time.Sleep(time.Second)
 	}
@@ -193,7 +231,7 @@ func checkUndoneJobs() {
 	nextNumber := config_main.nextNumber
 	muExpressions.Unlock()
 
-	if nextNumber > 1 {
+	if nextNumber > 1 { // были присланы выражения при прошлой работе
 		muExpressions.Lock()
 		defer muExpressions.Unlock()
 		f, _ := os.Open(config_main.fileExpressions)
@@ -208,7 +246,7 @@ func checkUndoneJobs() {
 		dataArrNew := make([]string, 0)
 		for _, v := range dataArr {
 			exp := strings.Split(v, ":")
-			if len(exp) > 3 {
+			if len(exp) > 4 {
 				if exp[3] == "0" || exp[3] == "1" { //  с прошлого запуска остались "status: waiting" или "status: in process"
 					exp[3] = "0" // меняем статус на "ожидание"
 					found = true
@@ -220,7 +258,7 @@ func checkUndoneJobs() {
 					// // fmt.Println(unDone)
 					// muUnDone.Unlock()
 				}
-				dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3])
+				dataArrNew = append(dataArrNew, exp[0]+":"+exp[1]+":"+exp[2]+":"+exp[3]+":"+exp[4])
 			}
 		}
 		if found { // запишем изменения в файл

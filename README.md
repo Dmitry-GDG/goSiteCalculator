@@ -142,9 +142,9 @@ curl http://localhost:8001/clearDb/   # очистка баз данных
 
 Тестовые запросы
 ```
-curl http://localhost:8001/data/?data="3+4*2/(1-5)^2^3"
-curl http://localhost:8001/data/?data="5+7-8*2+66*(2-1)+1"
-curl http://localhost:8001/data/?data="5+7-8*2+66*(2-1)+1+1"
+curl http://localhost:8000/data/?data="3+4*2/(1-5)^2^3"
+curl http://localhost:8000/data/?data="5+7-8*2+66*(2-1)+1"
+curl http://localhost:8000/data/?data="5+7-8*2+66*(2-1)+1+1"
 
 
 
