@@ -30,7 +30,11 @@ func fillConfig(str string) {
 	} else if val[0] == "fileExpressions" {
 		config_main.fileExpressions = val[1]
 	} else if val[0] == "lastExpression" {
-		config_main.lastExpression = val[1]
+		if len(val) == 1 {
+			config_main.lastExpression = ""
+		} else {
+			config_main.lastExpression = val[1]
+		}
 	} else if val[0] == "oetDivide" {
 		res, err := strconv.Atoi(val[1])
 		if err == nil {

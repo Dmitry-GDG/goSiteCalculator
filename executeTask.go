@@ -184,12 +184,12 @@ func executeTask(task []string) {
 			} else if taskSplit[i] == "*" {
 				resNow = calcMultiply(v1, v2)
 			} else if taskSplit[i] == "-" {
-				if v2 > v1 {
-					findErr = true
-					result = "nil"
-					log.Printf("ошибка: операции с отрицательнеыми числами не поддерживаются")
-					break
-				}
+				// if v2 > v1 {
+				// 	findErr = true
+				// 	result = "nil"
+				// 	log.Printf("ошибка: операции с отрицательнеыми числами не поддерживаются")
+				// 	break
+				// }
 				resNow = calcMinus(v1, v2)
 			} else if taskSplit[i] == "+" {
 				resNow = calcPlus(v1, v2)
@@ -214,12 +214,19 @@ func executeTask(task []string) {
 	muConfigs.Unlock()
 }
 
-// аркестратор, запускает задачи
+// оркестратор, запускает задачи
 func launchTasks() {
 	// бесконечный цикл с паузой 1 сек
+	written := false
 	for {
 		muConfigs.Lock()
 
+		if config_main.qtyBusyServers == 0 {
+			if !written {
+				log.Println("все задачи выполнены")
+				written = true
+			}
+		}
 		if config_main.qtyServers > config_main.qtyBusyServers { // если есть свободные серверы
 			muUnDone.Lock()
 			if len(unDone) > 0 { // если есть невыполненные задачи
@@ -230,6 +237,7 @@ func launchTasks() {
 					go executeTask(newTask)      // запускаем задачу в отдельной горутине
 					config_main.qtyBusyServers++ // занятых серверов стало больше
 				}
+				written = false
 			}
 			muUnDone.Unlock()
 		}

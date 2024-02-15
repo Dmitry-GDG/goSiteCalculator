@@ -336,7 +336,6 @@ func clearDbAttention(w http.ResponseWriter, r *http.Request) {
 // Очистка Баз Данных
 func clearDbFunc() {
 	muExpressions.Lock()
-	defer muExpressions.Unlock()
 	file, err := os.OpenFile(config_main.fileExpressions, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
@@ -344,6 +343,9 @@ func clearDbFunc() {
 	file.Close()
 
 	config_main.lastExpression = ""
+	config_main.nextNumber = 1
+	muExpressions.Unlock()
+	savePresentConfigToFile()
 
 	log.Println("базы данных очищены")
 }
