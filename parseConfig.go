@@ -83,7 +83,7 @@ func fillConfig(str string) {
 		res, err := strconv.Atoi(val[1])
 		if err == nil {
 			if res < 1 {
-				res = 1 // меньше 1 сервера нет смыслав устанавливать
+				res = 1 // меньше 1 сервера нет смысла устанавливать
 			}
 			config_main.qtyServers = res
 		}
@@ -124,21 +124,21 @@ func savePresentConfigToFile() {
 
 }
 
-// очистка файлов БД
-func cleanPrevData() {
-	muExpressions.Lock()
-	defer muExpressions.Unlock()
-	destFile, err := os.Create(config_main.fileExpressions)
-	if err != nil {
-		panic(err)
-	}
-	defer destFile.Close()
+// // очистка файлов БД
+// func cleanPrevData() {
+// 	muExpressions.Lock()
+// 	defer muExpressions.Unlock()
+// 	destFile, err := os.Create(config_main.fileExpressions)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer destFile.Close()
 
-	_, err = io.WriteString(destFile, "")
-	if err != nil {
-		panic(err)
-	}
-}
+// 	_, err = io.WriteString(destFile, "")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// }
 
 // парсинг файла конфига
 func parse(file string) {
@@ -165,6 +165,7 @@ func getConfig() {
 			parse(file)
 		}
 		savePresentConfigToFile()
-		cleanPrevData()
+		// cleanPrevData()
+		clearDbFunc()
 	}
 }

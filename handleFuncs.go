@@ -345,9 +345,10 @@ func clearDbFunc() {
 
 	config_main.lastExpression = ""
 
-	log.Println("Базы данных очищены")
+	log.Println("базы данных очищены")
 }
 
+// Обработка обращения на очистку БД
 func clearDb(w http.ResponseWriter, r *http.Request) {
 	log.Println("поступило обращение на очистку баз данных")
 	clearDbFunc()

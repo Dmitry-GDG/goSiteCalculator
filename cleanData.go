@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// замена всех табов и пробелов, идущих подряд, на один пробел
 func trimSpacesAndTabs(str string) string {
 	r := regexp.MustCompile("\\s+")
 	replace := r.ReplaceAllString(str, " ")

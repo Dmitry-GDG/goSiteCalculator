@@ -69,15 +69,15 @@ func dijkstra(tokens []string) ([]dijkstraData, error) {
 	}
 	tmpDictSigns := make(map[string]bool, 0) // if not set, tmpDictSigns will be false(left-associative)
 
-	dijkstraSlice := make([]dijkstraData, 0)      // срез данных Дейкстры
+	dijkstraSlice := make([]dijkstraData, 0)      // срез данных Дейкстры (чисел и знаков)
 	dijkstraSliceSigns := make([]dijkstraData, 0) // стек операторов
 
 	for _, token := range tokens {
 		v, err := strconv.Atoi(token)
-		if err == nil {
+		if err == nil { // если это число
 			dijkstraSlice = append(dijkstraSlice, dijkstraData{val: v})
-		} else {
-			if token == "(" {
+		} else { // это не число, проверяем дальше
+			if token == "(" { // открывающую скобку переносим в спомогательный срез (стек) операторов
 				dijkstraSliceSigns = append(dijkstraSliceSigns, dijkstraData{valSign: token, isSign: true})
 			} else if token == ")" {
 				// если попалась закрывающая скобка - переносим из стека все операторы, пока не попадётся открывающаяся скобка
@@ -93,46 +93,49 @@ func dijkstra(tokens []string) ([]dijkstraData, error) {
 					}
 				}
 				if !found {
-					// если не было открывающейся скобки
+					// если не было открывающейся скобки - ошибка
 					return []dijkstraData{}, errors.New("error: expression is not valid, mismatched parentheses found")
 				}
 			} else {
-				// log.Println("HERE")
-				priority, ok := dictSigns[token]
+				// в остальных случаях проверяем на знак
+				priority, ok := dictSigns[token] // это приоритет данного оператора
 				if !ok {
 					return []dijkstraData{}, fmt.Errorf("error: expression is not valid, unknown operator: %v", token)
 				}
 
-				rightAssociative := tmpDictSigns[token]
-				for len(dijkstraSliceSigns) > 0 {
+				rightAssociative := tmpDictSigns[token] // существует?
+				for len(dijkstraSliceSigns) > 0 {       // перебираем все элементы стека операторов, пока не попадётся открывающаяс скобка или стек не закончится
 					top := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
 
-					if top.valSign == "(" {
+					if top.valSign == "(" { // открвающая скобка нас не интересует, блок закончился, прекращаем
 						break
 					}
 
-					prevPriority := dictSigns[top.valSign]
+					prevPriority := dictSigns[top.valSign] // приоритет верхнего оператора стека операторов
 
 					if (rightAssociative && priority < prevPriority) || (!rightAssociative && priority <= prevPriority) {
-						// pop current operator
+						// перекидываем в основной срез верхний оператор из стека операторов
 						dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1]
 						dijkstraSlice = append(dijkstraSlice, top)
 					} else {
 						break
 					}
 				} // end of for len(dijkstraSliceSigns) > 0
+				// добавляем данный оператор в стек операторов
 				dijkstraSliceSigns = append(dijkstraSliceSigns, dijkstraData{valSign: token, isSign: true})
 			} // end of if token == "("
 		}
 
 	} // end of for _, token := range tokens
-	// log.Println("HERE")
+
+	// перекидываем все оставшиеся операторы по порядку из стека операторов в основной срез
 	for len(dijkstraSliceSigns) > 0 {
 		// pop
 		newMember := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
 		dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1]
 
 		if newMember.valSign == "(" {
+			// непарная скобка осталась - ошибка
 			return []dijkstraData{}, errors.New("error: expression is not valid, mismatched parentheses found")
 		}
 		dijkstraSlice = append(dijkstraSlice, newMember)
@@ -153,7 +156,6 @@ func checkUnicTask(data string) (bool, error) {
 	fileScanner := bufio.NewScanner(f)
 	for fileScanner.Scan() {
 		exp := strings.Split(fileScanner.Text(), ":")
-		// fmt.Println("data: ", data, "from db: ", exp[0])
 		if len(exp) > 1 {
 			if data == exp[1] {
 				return false, nil
@@ -249,7 +251,7 @@ func parseAndSaveTask(data string) error {
 	if err := addNewData(data, dijkstra); err != nil {
 		panic(err)
 	}
-	log.Println("В бд добавлена новая строка:", data)
+	log.Println("в бд добавлена новая строка:", data)
 
 	// обновляем данные о последнем выражении в переменной
 	muConfigs.Lock()
@@ -292,7 +294,7 @@ func parseAndSaveSettings(name string) error {
 		return errors.New("error: new settings is not valid (unknown settings)")
 	}
 	muConfigs.Unlock()
-	log.Println("В бд изменены данные:", nameArr[0]+"="+strconv.Itoa(newData))
+	log.Println("в бд изменены данные:", nameArr[0]+"="+strconv.Itoa(newData))
 
 	// обновляем данные о последнем выражении в файле последнего конфига
 	savePresentConfigToFile()
@@ -321,7 +323,7 @@ func parseAndSaveServers(name string) error {
 		return errors.New("error: new resources is not valid (unknown settings)")
 	}
 	muConfigs.Unlock()
-	log.Println("В бд изменены данные:", nameArr[0]+"="+strconv.Itoa(newData))
+	log.Println("в бд изменены данные:", nameArr[0]+"="+strconv.Itoa(newData))
 
 	// обновляем данные о последнем выражении в файле последнего конфига
 	savePresentConfigToFile()

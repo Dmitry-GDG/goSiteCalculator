@@ -51,6 +51,7 @@ func upperStatusTaskToFile(taskNbr string) {
 	}
 }
 
+// вычисление функции возведение в степень
 func calcPower(v1, v2 int) int {
 	log.Printf("вычисляется возведение в степень %d ^ %d\n", v1, v2)
 	muConfigs.Lock()
@@ -62,6 +63,7 @@ func calcPower(v1, v2 int) int {
 	return res
 }
 
+// вычисление функции разность
 func calcMinus(v1, v2 int) int {
 	log.Printf("вычисляется разность %d - %d\n", v1, v2)
 	muConfigs.Lock()
@@ -73,6 +75,7 @@ func calcMinus(v1, v2 int) int {
 	return res
 }
 
+// вычисление функции сложение
 func calcPlus(v1, v2 int) int {
 	log.Printf("вычисляется сложение %d + %d\n", v1, v2)
 	muConfigs.Lock()
@@ -84,6 +87,7 @@ func calcPlus(v1, v2 int) int {
 	return res
 }
 
+// вычисление функции произведение
 func calcMultiply(v1, v2 int) int {
 	log.Printf("вычисляется произведение %d * %d\n", v1, v2)
 	muConfigs.Lock()
@@ -95,6 +99,7 @@ func calcMultiply(v1, v2 int) int {
 	return res
 }
 
+// вычисление функции деление
 func calcDivide(v1, v2 int) int {
 	log.Printf("вычисляется деление %d / %d\n", v1, v2)
 	muConfigs.Lock()
@@ -106,6 +111,7 @@ func calcDivide(v1, v2 int) int {
 	return res
 }
 
+// сохранение результата вычислений в файл
 func saveResultToFile(taskNbr, result string) {
 	muExpressions.Lock()
 	defer muExpressions.Unlock()
@@ -149,6 +155,7 @@ func saveResultToFile(taskNbr, result string) {
 	}
 }
 
+// задача: решение конкретного выражения
 func executeTask(task []string) {
 	log.Println("отправлена на выполнение новая задача: ", task[2])
 	upperStatusTaskToFile(task[0]) // переводим задачу в статус "в работе"
@@ -157,6 +164,8 @@ func executeTask(task []string) {
 	findErr := false
 	var result string
 	var resNow int
+
+	// работаем с подготовленным выражением
 	taskSplit := strings.Split(task[2], " ")
 	for i := 0; i < len(taskSplit); i++ {
 		nbr, err := strconv.Atoi(taskSplit[i])
@@ -188,10 +197,10 @@ func executeTask(task []string) {
 				resNow = calcPower(v1, v2)
 			}
 			tmpArr = append(tmpArr, resNow) // запишем результат вычислений во вспомогательный срез
-		} else { // перекладываем число во вспомогательный срез
+		} else { // это не знак, а число. перекладываем это число во вспомогательный срез
 			tmpArr = append(tmpArr, nbr)
 		}
-		if findErr {
+		if findErr { // если произошла ошибка - выходим из цикла
 			break
 		}
 	}
@@ -211,9 +220,9 @@ func launchTasks() {
 	for {
 		muConfigs.Lock()
 
-		if config_main.qtyServers > config_main.qtyBusyServers {
+		if config_main.qtyServers > config_main.qtyBusyServers { // если есть свободные серверы
 			muUnDone.Lock()
-			if len(unDone) > 0 {
+			if len(unDone) > 0 { // если есть невыполненные задачи
 				for len(unDone) > 0 && config_main.qtyServers > config_main.qtyBusyServers { // пока есть задачи и свободные серверы
 					// popFront
 					newTask := unDone[0]
@@ -241,7 +250,7 @@ func checkUndoneJobs() {
 		defer muExpressions.Unlock()
 		f, _ := os.Open(config_main.fileExpressions)
 		fileScanner := bufio.NewScanner(f)
-		dataArr := make([]string, 0)
+		dataArr := make([]string, 0) // срез нерешённых с прошлого запуска задач
 		for fileScanner.Scan() {
 			data := fileScanner.Text()
 			data = removeR(data)
@@ -253,7 +262,7 @@ func checkUndoneJobs() {
 			exp := strings.Split(v, ":")
 			if len(exp) > 4 {
 				if exp[3] == "0" || exp[3] == "1" { //  с прошлого запуска остались "status: waiting" или "status: in process"
-					exp[3] = "0" // меняем статус на "ожидание"
+					exp[3] = "0" // меняем их статус на "ожидание"
 					found = true
 					f.Close()
 					// запишем задачу в очередь
