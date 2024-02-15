@@ -155,7 +155,8 @@ func executeTask(task []string) {
 
 	tmpArr := make([]int, 0) // вспомогательный срез для хранения чисел
 	findErr := false
-	var result int
+	var result string
+	var resNow int
 	taskSplit := strings.Split(task[2], " ")
 	for i := 0; i < len(taskSplit); i++ {
 		nbr, err := strconv.Atoi(taskSplit[i])
@@ -166,19 +167,27 @@ func executeTask(task []string) {
 			if taskSplit[i] == "/" {
 				if v2 == 0 {
 					findErr = true
+					result = "nil"
+					log.Printf("ошибка: деление на ноль не поддерживается")
 					break
 				}
-				result = calcDivide(v1, v2)
+				resNow = calcDivide(v1, v2)
 			} else if taskSplit[i] == "*" {
-				result = calcMultiply(v1, v2)
+				resNow = calcMultiply(v1, v2)
 			} else if taskSplit[i] == "-" {
-				result = calcMinus(v1, v2)
+				if v2 > v1 {
+					findErr = true
+					result = "nil"
+					log.Printf("ошибка: операции с отрицательнеыми числами не поддерживаются")
+					break
+				}
+				resNow = calcMinus(v1, v2)
 			} else if taskSplit[i] == "+" {
-				result = calcPlus(v1, v2)
+				resNow = calcPlus(v1, v2)
 			} else if taskSplit[i] == "^" {
-				result = calcPower(v1, v2)
+				resNow = calcPower(v1, v2)
 			}
-			tmpArr = append(tmpArr, result) // запишем результат вычислений во вспомогательный срез
+			tmpArr = append(tmpArr, resNow) // запишем результат вычислений во вспомогательный срез
 		} else { // перекладываем число во вспомогательный срез
 			tmpArr = append(tmpArr, nbr)
 		}
@@ -187,7 +196,10 @@ func executeTask(task []string) {
 		}
 	}
 
-	saveResultToFile(task[0], strconv.Itoa(result)) // переводим задачу в статус "выполнено" и сохраняем результат
+	if result == "" {
+		result = strconv.Itoa(resNow)
+	}
+	saveResultToFile(task[0], result) // переводим задачу в статус "выполнено" и сохраняем результат
 	muConfigs.Lock()
 	config_main.qtyBusyServers-- // освобождаем один сервер
 	muConfigs.Unlock()
