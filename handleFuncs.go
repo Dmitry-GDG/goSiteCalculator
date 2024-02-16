@@ -147,15 +147,19 @@ func getList(w http.ResponseWriter, r *http.Request) {
 		exp := strings.Split(fileScanner.Text(), ":")
 		if len(exp) > 3 {
 			if exp[3] == "0" {
-				exp[3] = "status: waiting"
+				exp[3] = `&nbsp;<a style="color: SaddleBrown; font-size: 22px;">, Ожидает</a>`
 			} else if exp[3] == "1" {
-				exp[3] = "status: in process"
+				exp[3] = `&nbsp;<a style="color: blue; font-size: 22px;">, В работе</a>`
 			} else if exp[3] == "2" {
-				exp[3] = "status: done"
+				exp[3] = `&nbsp;<a style="color: green; font-size: 22px;">, Выполнено</a>`
 			}
 			content += "Номер задачи: " + exp[0] + "<br>&nbsp;" + exp[1] + "&nbsp;" + exp[3] + "<br>Выражение в виде, подготовленном для вычислений: " + exp[2]
-			if exp[3] == "status: done" {
-				content += "<br>&nbsp;Итог: " + exp[4]
+			if exp[3] == `&nbsp;<a style="color: green; font-size: 22px;">, Выполнено</a>` {
+				if exp[4] == "nil" {
+					content += `<br>&nbsp;Итог: <a style="color: red; font-size: 22px;">Ошибка: деление на ноль</a>`
+				} else {
+					content += `<br>&nbsp;Итог: <a style="color: darkgreen; font-size: 22px;">` + exp[4] + "</a>"
+				}
 			}
 			content += "<br>-----------------<br>"
 		}
