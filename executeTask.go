@@ -184,12 +184,6 @@ func executeTask(task []string) {
 			} else if taskSplit[i] == "*" {
 				resNow = calcMultiply(v1, v2)
 			} else if taskSplit[i] == "-" {
-				// if v2 > v1 {
-				// 	findErr = true
-				// 	result = "nil"
-				// 	log.Printf("ошибка: операции с отрицательнеыми числами не поддерживаются")
-				// 	break
-				// }
 				resNow = calcMinus(v1, v2)
 			} else if taskSplit[i] == "+" {
 				resNow = calcPlus(v1, v2)

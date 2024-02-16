@@ -72,36 +72,33 @@ func dijkstra(tokens []string) ([]dijkstraData, error) {
 	dijkstraSlice := make([]dijkstraData, 0)      // срез данных Дейкстры (чисел и знаков)
 	dijkstraSliceSigns := make([]dijkstraData, 0) // стек операторов
 	lastPriority1 := 0                            // для обработки отрицательных чисел и последовательности знаков + и -, кол-во последовательных операторов + и -
-	lastPriority23 := 0                           // кол-во последовательных операторов *, / и операторов возведения в степень
+	lastPriority23 := 0
+	firstTime := false // случай, когда знаки стоят перед первым членом выражения
 
 	for i := 0; i < len(tokens); i++ {
 		v, err := strconv.Atoi(tokens[i])
 		if err == nil { // если это число
-			// fmt.Println("HERE")
-			// fmt.Printf("tokens[%d] = %s\n", i, tokens[i])
-			if lastPriority1 > 0 {
-				// fmt.Println("lastPriority1 = ", lastPriority1, "len(dijkstraSliceSigns) = ", len(dijkstraSliceSigns))
+			if lastPriority1 > 0 { // до этого подряд шли несколько знаков + и -
 				for len(dijkstraSliceSigns) > 0 && lastPriority1 > 1 {
 					top := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
 					if top.valSign == "-" { // встретился знак минус, меняем значение числа
 						v *= -1
 					}
-
 					dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1] // удаляем знак из стека
-
-					lastPriority1-- // уменьшаем количество последовательных операторов с приоритетом 1
-					// i++
+					lastPriority1--                                                     // уменьшаем количество последовательных операторов с приоритетом 1
 				}
-				// dijkstraSlice = append(dijkstraSlice, dijkstraData{val: v})
-				// top := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
-				// dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1]
-				// dijkstraSlice = append(dijkstraSlice, top)
+				if firstTime { // обрабатываем случай, когда знаки стоят перед первым членом выражения
+					firstTime = false
+					top := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
+					if top.valSign == "-" { // встретился знак минус, меняем значение числа
+						v *= -1
+					}
+					dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1] // удаляем знак из стека
+				}
 				lastPriority1--
 				if lastPriority1 > 1 {
 					return []dijkstraData{}, fmt.Errorf("error: expression is not valid: ", tokens[i])
 				}
-				// i++
-			} else {
 			}
 			dijkstraSlice = append(dijkstraSlice, dijkstraData{val: v})
 			lastPriority1, lastPriority23 = 0, 0 // обнуляем маркеры
@@ -138,10 +135,16 @@ func dijkstra(tokens []string) ([]dijkstraData, error) {
 					return []dijkstraData{}, fmt.Errorf("error: expression is not valid, not correct order of operators: %v", tokens[i])
 				}
 				if priority == 1 {
+					if i == 0 {
+						firstTime = true
+					}
 					lastPriority1++
 					lastPriority23 = 0
 				}
 				if priority > 1 {
+					if i == 0 { // знаки умножения и возведения в степень не могут стоять в начале выражения
+						return []dijkstraData{}, fmt.Errorf("error: expression is not valid: знаки умножения, деления и возведения в степень не могут стоять в начале выражения")
+					}
 					lastPriority23++
 					lastPriority1 = 0
 				}
@@ -169,95 +172,14 @@ func dijkstra(tokens []string) ([]dijkstraData, error) {
 						} else {
 							break
 						}
-					}
-				} // end of for len(dijkstraSliceSigns) > 0
+					} // end of for len(dijkstraSliceSigns) > 0
+				}
 				// добавляем данный оператор в стек операторов
-				// }
 				dijkstraSliceSigns = append(dijkstraSliceSigns, dijkstraData{valSign: tokens[i], isSign: true})
-			} // end of if token == "("
+			}
 		}
 
-	} // end of for _, token := range tokens
-
-	// for _, token := range tokens {
-	// 	v, err := strconv.Atoi(token)
-	// 	if err == nil { // если это число
-	// 		for lastMunus > 0 {
-	// 			v *= -1
-	// 			lastMunus--
-	// 		}
-
-	// 		// проверяем, есть ли знаки минус перед числом
-	// 		for len(dijkstraSliceSigns) > 0 { // перебираем все элементы стека операторов, пока попадается знак минус или стек не закончится
-	// 			top := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
-	// 			if top.valSign != "-" { // не встретился знак минус, прекращаем
-	// 				break
-	// 			}
-	// 			// предыдущий
-	// 			v *= -1
-	// 			prevPriority := dictSigns[top.valSign] // приоритет верхнего оператора стека операторов
-
-	// 			if (rightAssociative && priority < prevPriority) || (!rightAssociative && priority <= prevPriority) {
-	// 				// перекидываем в основной срез верхний оператор из стека операторов
-	// 				dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1]
-	// 				dijkstraSlice = append(dijkstraSlice, top)
-	// 			} else {
-	// 				break
-	// 			}
-	// 		}
-
-	// 		dijkstraSlice = append(dijkstraSlice, dijkstraData{val: v})
-	// 	} else { // это не число, проверяем дальше
-	// 		if token == "(" { // открывающую скобку переносим в спомогательный срез (стек) операторов
-	// 			dijkstraSliceSigns = append(dijkstraSliceSigns, dijkstraData{valSign: token, isSign: true})
-	// 		} else if token == ")" {
-	// 			// если попалась закрывающая скобка - переносим из стека все операторы, пока не попадётся открывающаяся скобка
-	// 			found := false
-	// 			for len(dijkstraSliceSigns) > 0 {
-	// 				newMember := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
-	// 				dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1]
-	// 				if newMember.valSign == "(" {
-	// 					found = true
-	// 					break
-	// 				} else {
-	// 					dijkstraSlice = append(dijkstraSlice, newMember)
-	// 				}
-	// 			}
-	// 			if !found {
-	// 				// если не было открывающейся скобки - ошибка
-	// 				return []dijkstraData{}, errors.New("error: expression is not valid, mismatched parentheses found")
-	// 			}
-	// 		} else {
-	// 			// в остальных случаях проверяем на знак
-	// 			priority, ok := dictSigns[token] // это приоритет данного оператора
-	// 			if !ok {
-	// 				return []dijkstraData{}, fmt.Errorf("error: expression is not valid, unknown operator: %v", token)
-	// 			}
-
-	// 			rightAssociative := tmpDictSigns[token] // существует?
-	// 			for len(dijkstraSliceSigns) > 0 {       // перебираем все элементы стека операторов, пока не попадётся открывающаяс скобка или стек не закончится
-	// 				top := dijkstraSliceSigns[len(dijkstraSliceSigns)-1]
-
-	// 				if top.valSign == "(" { // открвающая скобка нас не интересует, блок закончился, прекращаем
-	// 					break
-	// 				}
-
-	// 				prevPriority := dictSigns[top.valSign] // приоритет верхнего оператора стека операторов
-
-	// 				if (rightAssociative && priority < prevPriority) || (!rightAssociative && priority <= prevPriority) {
-	// 					// перекидываем в основной срез верхний оператор из стека операторов
-	// 					dijkstraSliceSigns = dijkstraSliceSigns[:len(dijkstraSliceSigns)-1]
-	// 					dijkstraSlice = append(dijkstraSlice, top)
-	// 				} else {
-	// 					break
-	// 				}
-	// 			} // end of for len(dijkstraSliceSigns) > 0
-	// 			// добавляем данный оператор в стек операторов
-	// 			dijkstraSliceSigns = append(dijkstraSliceSigns, dijkstraData{valSign: token, isSign: true})
-	// 		} // end of if token == "("
-	// 	}
-
-	// } // end of for _, token := range tokens
+	}
 
 	// перекидываем все оставшиеся операторы по порядку из стека операторов в основной срез
 	for len(dijkstraSliceSigns) > 0 {
